@@ -15,5 +15,6 @@ lex.yy.c
 /fdtget
 /fdtput
 /fdtoverlay
+/fdtoverlaymerge
 /patches
 /.pc
