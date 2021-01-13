@@ -226,7 +226,7 @@ endif
 install-bin: all $(SCRIPTS)
 	@$(VECHO) INSTALL-BIN
 	$(INSTALL) -d $(DESTDIR)$(BINDIR)
-	$(INSTALL_PROGRAM) $(BIN) $(DESTDIR)$(BINDIR)
+	$(INSTALL_PROGRAM) $(addprefix $(OUT_DIR)/, $(BIN)) $(DESTDIR)$(BINDIR)
 	$(INSTALL_SCRIPT) $(SCRIPTS) $(DESTDIR)$(BINDIR)
 
 install-lib: all
