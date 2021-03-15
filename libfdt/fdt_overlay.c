@@ -408,8 +408,7 @@ static int overlay_fixup_one_phandle(void *fdt, void *fdto,
 
 static int overlay_add_to_local_fixups(void *fdt, const char *value, int len)
 {
-	const char *path, *fixup_end, *prop;
-	const char *fixup_str = value;
+	const char *path, *fixup_end, *prop, *fixup_str;
 	uint32_t clen;
 	uint32_t fixup_len;
 	char *sep, *endptr;
@@ -426,6 +425,8 @@ static int overlay_add_to_local_fixups(void *fdt, const char *value, int len)
 		return localfixup_off;
 
 	while (len > 0) {
+		fixup_str = value;
+
 		/* Assumes null-terminated properties! */
 		fixup_end = memchr(value, '\0', len);
 		if (!fixup_end)
@@ -529,7 +530,7 @@ static int overlay_add_to_local_fixups(void *fdt, const char *value, int len)
 			}
 		}
 
-		ret = fdt_setprop_u32(fdt, nodeoffset, propname, poffset);
+		ret = fdt_appendprop_u32(fdt, nodeoffset, propname, poffset);
 		if (ret < 0)
 			return ret;
 	}
@@ -561,11 +562,11 @@ static int overlay_add_to_local_fixups(void *fdt, const char *value, int len)
 static int overlay_fixup_phandle(void *fdt, void *fdto, int symbols_off,
 				int property, int fixups_off, int merge)
 {
-	const char *value;
+	const char *value, *total_value;
 	const char *label;
-	int len, ret = 0;
+	int len, total_len, ret = 0;
 
-	value = fdt_getprop_by_offset(fdto, property,
+	total_value = value = fdt_getprop_by_offset(fdto, property,
 				      &label, &len);
 	if (!value) {
 		if (len == -FDT_ERR_NOTFOUND)
@@ -573,6 +574,8 @@ static int overlay_fixup_phandle(void *fdt, void *fdto, int symbols_off,
 
 		return len;
 	}
+
+	total_len = len;
 
 	do {
 		const char *path, *name, *fixup_end;
@@ -644,7 +647,7 @@ static int overlay_fixup_phandle(void *fdt, void *fdto, int symbols_off,
 	 * during a subsequent overlay of combined blob on a base blob.
 	 */
 	if (merge) {
-		ret = overlay_add_to_local_fixups(fdt, value, len);
+		ret = overlay_add_to_local_fixups(fdt, total_value, total_len);
 		if (!ret)
 			ret = fdt_delprop(fdto, fixups_off, label);
 	}
